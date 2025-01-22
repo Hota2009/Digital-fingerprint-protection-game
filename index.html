@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لعبة البصمة الرقمية</title>
+    <style>
+      body {
+        background-color: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        margin: 20px auto;
+        max-width: 600px;
+        padding: 20px;
+        background: #222;
+        border-radius: 10px;
+        box-shadow: 0 0 20px #39ff14;
+      }
+
+      h1 {
+        text-align: center;
+        color: #39ff14;
+      }
+
+      .question {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+      }
+
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .option {
+        padding: 10px;
+        background: #333;
+        border: 2px solid #39ff14;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s ease;
+      }
+
+      .option:hover {
+        background: #39ff14;
+        color: #111;
+      }
+
+      .score-board {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 200px;
+        height: 60px;
+        background: #222;
+        border: 3px solid #39ff14;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        gap: 10px;
+        box-shadow: 0 0 15px #39ff14;
+        z-index: 1000;
+      }
+
+      .score-board .icon {
+        font-size: 2em;
+        color: #39ff14;
+      }
+
+      .score-board span {
+        font-size: 1.2em;
+        color: #39ff14;
+      }
+
+      .feedback {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #222;
+        padding: 10px 20px;
+        border: 3px solid #39ff14;
+        border-radius: 10px;
+        color: #fff;
+        font-size: 1.2em;
+        text-align: center;
+        display: none;
+      }
+
+      .timer {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: #222;
+        border: 3px solid #39ff14;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-size: 1.5em;
+        color: #39ff14;
+        box-shadow: 0 0 15px #39ff14;
+        z-index: 1000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="score-board">
+      <div class="icon">⭐</div>
+      <span>النقاط: 0</span>
+    </div>
+
+    <div class="timer" id="timer">10</div>
+
+    <div class="container">
+      <h1>لعبة البصمة الرقمية</h1>
+      <div class="question"></div>
+      <div class="options"></div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <script>
+              let score = 0;
+              let timer = 10;
+              let interval;
+
+              const scoreBoard = document.querySelector('.score-board span');
+              const questionElement = document.querySelector('.question');
+              const optionsContainer = document.querySelector('.options');
+              const feedback = document.getElementById('feedback');
+              const timerElement = document.getElementById('timer');
+
+              const questions = [
+                  { question: "ما هي البصمة الرقمية؟", options: [{ text: "هي الأثر الذي تتركه أثناء استخدامك للإنترنت", correct: true }, { text: "هي بصمة إصبعك عند استخدام الهاتف", correct: false }, { text: "هي نوع من أنواع التكنولوجيا", correct: false }, { text: "لا شيء مما سبق", correct: false }] },
+                  { question: "كيف يمكنك حماية البصمة الرقمية؟", options: [{ text: "مشاركة بياناتك مع الجميع", correct: false }, { text: "استخدام كلمات مرور قوية", correct: true }, { text: "فتح جميع الروابط المرسلة إليك", correct: false }, { text: "نشر جميع معلوماتك الشخصية", correct: false }] },
+                  { question: "ماذا تعني كلمة 'التتبع الرقمي'؟", options: [{ text: "متابعة نشاطاتك الرقمية عبر الإنترنت", correct: true }, { text: "جمع بياناتك لتسجيل الدخول", correct: false }, { text: "التسجيل في منصات جديدة", correct: false }, { text: "حماية خصوصيتك", correct: false }] },
+
+          { question: "ما هي البصمة الرقمية؟", options: [{ text: "هي الأثر الذي تتركه أثناء استخدامك للإنترنت", correct: true }, { text: "هي بصمة إصبعك عند استخدام الهاتف", correct: false }, { text: "هي نوع من أنواع التكنولوجيا", correct: false }, { text: "لا شيء مما سبق", correct: false }] },
+          { question: "كيف يمكنك حماية البصمة الرقمية؟", options: [{ text: "مشاركة بياناتك مع الجميع", correct: false }, { text: "استخدام كلمات مرور قوية", correct: true }, { text: "فتح جميع الروابط المرسلة إليك", correct: false }, { text: "نشر جميع معلوماتك الشخصية", correct: false }] },
+          { question: "ماذا تعني كلمة 'التتبع الرقمي'؟", options: [{ text: "متابعة نشاطاتك الرقمية عبر الإنترنت", correct: true }, { text: "جمع بياناتك لتسجيل الدخول", correct: false }, { text: "التسجيل في منصات جديدة", correct: false }, { text: "حماية خصوصيتك", correct: false }] },
+          { question: "ما هو أحد مخاطر البصمة الرقمية؟", options: [{ text: "استخدامها في الإعلانات الموجهة", correct: true }, { text: "حمايتك من الفيروسات", correct: false }, { text: "تسريع الإنترنت", correct: false }, { text: "زيادة الخصوصية", correct: false }] },
+          { question: "ما هي وسيلة لحماية بياناتك الشخصية؟", options: [{ text: "استخدام VPN", correct: true }, { text: "مشاركة كلمات المرور", correct: false }, { text: "فتح جميع الرسائل المجهولة", correct: false }, { text: "تعطيل جدار الحماية", correct: false }] },
+          { question: "لماذا تُعتبر البصمة الرقمية مهمة؟", options: [{ text: "لتحديد هويتك الرقمية", correct: true }, { text: "لزيادة سرعة الإنترنت", correct: false }, { text: "لإدارة التطبيقات", correct: false }, { text: "لتقليل استخدامك للإنترنت", correct: false }] },
+          { question: "كيف يتم تتبع نشاطاتك الرقمية؟", options: [{ text: "عبر ملفات تعريف الارتباط (Cookies)", correct: true }, { text: "عبر شبكات VPN", correct: false }, { text: "عبر جدار الحماية", correct: false }, { text: "عبر حذف البيانات", correct: false }] },
+          { question: "ما هو أحد استخدامات البصمة الرقمية؟", options: [{ text: "تحليل السلوك الشخصي", correct: true }, { text: "زيادة الخصوصية", correct: false }, { text: "تشفير البيانات", correct: false }, { text: "حذف جميع الآثار الرقمية", correct: false }] },
+          { question: "ما الفرق بين البصمة الرقمية والبصمة الورقية؟", options: [{ text: "البصمة الرقمية تتعلق بالإنترنت", correct: true }, { text: "البصمة الورقية تتعلق بالتكنولوجيا", correct: false }, { text: "البصمة الرقمية تُستخدم للأمان", correct: false }, { text: "لا فرق بينهما", correct: false }] },
+          { question: "كيف يمكن تقليل مخاطر البصمة الرقمية؟", options: [{ text: "إخفاء نشاطاتك عبر الإنترنت", correct: true }, { text: "مشاركة معلوماتك مع الجميع", correct: false }, { text: "تعطيل التحديثات الأمنية", correct: false }, { text: "استخدام كلمات مرور سهلة", correct: false }] },
+          { question: "ما هو أحد مصادر البصمة الرقمية؟", options: [{ text: "استخدام وسائل التواصل الاجتماعي", correct: true }, { text: "إغلاق الإنترنت", correct: false }, { text: "عدم استخدام التكنولوجيا", correct: false }, { text: "إخفاء ملفات تعريف الارتباط", correct: false }] },
+          { question: "ما هي ميزة استخدام VPN؟", options: [{ text: "إخفاء عنوان IP", correct: true }, { text: "زيادة سرعة الإنترنت", correct: false }, { text: "تقليل حجم البيانات", correct: false }, { text: "إغلاق الإعلانات", correct: false }] },
+          { question: "كيف يمكن تأمين حساباتك على الإنترنت؟", options: [{ text: "استخدام التحقق بخطوتين", correct: true }, { text: "تسجيل الخروج دائمًا", correct: false }, { text: "عدم تغيير كلمات المرور", correct: false }, { text: "فتح الرسائل العشوائية", correct: false }] },
+          { question: "كيف تؤثر البصمة الرقمية على الخصوصية؟", options: [{ text: "تقلل الخصوصية إذا لم تُدار بشكل صحيح", correct: true }, { text: "تزيد الخصوصية دائمًا", correct: false }, { text: "لا تأثير لها", correct: false }, { text: "تعزز الأمان", correct: false }] },
+          { question: "ما هو أحد أنواع البصمة الرقمية؟", options: [{ text: "البصمة النشطة", correct: true }, { text: "البصمة الورقية", correct: false }, { text: "البصمة التقليدية", correct: false }, { text: "البصمة الحيوية", correct: false }] },
+          { question: "كيف يمكن إزالة البصمة الرقمية؟", options: [{ text: "حذف الحسابات القديمة", correct: true }, { text: "مشاركة معلوماتك", correct: false }, { text: "إيقاف التحقق بخطوتين", correct: false }, { text: "فتح جميع الإعلانات", correct: false }] },
+          { question: "ماذا يعني 'بصمة رقمية نشطة'؟", options: [{ text: "الأثر الناتج عن تفاعلك على الإنترنت", correct: true }, { text: "الأثر الناتج عن استخدام الأجهزة القديمة", correct: false }, { text: "أثر غير مرئي على الإنترنت", correct: false }, { text: "لا شيء مما سبق", correct: false }] },
+          { question: "كيف يمكن التحكم في الإعلانات الموجهة؟", options: [{ text: "تعطيل تتبع ملفات تعريف الارتباط", correct: true }, { text: "إغلاق الإنترنت", correct: false }, { text: "مشاركة معلوماتك", correct: false }, { text: "عدم تحديث التطبيقات", correct: false }] },
+          { question: "ما هو مصدر الخطر الأكبر للبصمة الرقمية؟", options: [{ text: "استخدام شبكات غير آمنة", correct: true }, { text: "استخدام شبكات VPN", correct: false }, { text: "استخدام كلمات مرور قوية", correct: false }, { text: "تحديث التطبيقات", correct: false }] },
+          { question: "ما الفرق بين البصمة الرقمية والبصمة الحيوية؟", options: [{ text: "البصمة الرقمية هي بياناتك على الإنترنت", correct: true }, { text: "البصمة الحيوية تتعلق بالإنترنت", correct: false }, { text: "البصمة الرقمية هي بصمة الأصابع", correct: false }, { text: "لا فرق بينهما", correct: false }] },
+          { question: "كيف يمكن حماية جهازك أثناء الاتصال بالإنترنت؟", options: [{ text: "استخدام برامج الحماية", correct: true }, { text: "إيقاف البرامج", correct: false }, { text: "مشاركة بياناتك", correct: false }, { text: "فتح جميع الروابط", correct: false }] },
+          { question: "ما هو دور برامج الحماية؟", options: [{ text: "حماية بياناتك من الاختراق", correct: true }, { text: "تسجيل بياناتك", correct: false }, { text: "إبطاء الإنترنت", correct: false }, { text: "فتح الإعلانات", correct: false }] },
+          { question: "ما هو أثر البصمة الرقمية على سمعتك؟", options: [{ text: "تؤثر إيجابًا أو سلبًا حسب سلوكك الرقمي", correct: true }, { text: "ليس لها أي أثر", correct: false }, { text: "تعزز سمعتك دائمًا", correct: false }, { text: "تقلل سمعتك دائمًا", correct: false }] },
+          { question: "كيف يمكن تحسين بصمتك الرقمية؟", options: [{ text: "مشاركة محتوى مفيد", correct: true }, { text: "حذف جميع الحسابات", correct: false }, { text: "مشاركة بياناتك الشخصية", correct: false }, { text: "تعطيل برامج الحماية", correct: false }] },
+          { question: "ما هي الاستراتيجية الأفضل لحماية خصوصيتك الرقمية؟", options: [{ text: "الوعي بمخاطر الإنترنت", correct: true }, { text: "مشاركة معلوماتك مع الجميع", correct: false }, { text: "تعطيل جميع الأجهزة", correct: false }, { text: "فتح جميع الروابط", correct: false }] }
+      ];
+
+             
+              while (questions.length < 25) {
+                  questions.push({
+                      question: `سؤال إضافي ${questions.length + 1}؟`,
+                      options: [
+                          { text: "إجابة 1", correct: false },
+                          { text: "إجابة 2", correct: true },
+                          { text: "إجابة 3", correct: false },
+                          { text: "إجابة 4", correct: false },
+                      ],
+                  });
+              }
+
+              let currentQuestionIndex = 0;
+
+              function startGame() {
+                  score = 0;
+                  currentQuestionIndex = 0;
+                  timer = 10;
+                  updateTimer();
+                  loadQuestion();
+              }
+
+              function loadQuestion() {
+                  const currentQuestion = questions[currentQuestionIndex];
+                  questionElement.textContent = currentQuestion.question;
+                  optionsContainer.innerHTML = '';
+                  currentQuestion.options.forEach(option => {
+                      const optionElement = document.createElement('div');
+                      optionElement.classList.add('option');
+                      optionElement.textContent = option.text;
+                      optionElement.dataset.correct = option.correct;
+                      optionsContainer.appendChild(optionElement);
+                  });
+                  addOptionListeners();
+                  startTimer();
+              }
+
+              function addOptionListeners() {
+                  const options = document.querySelectorAll('.option');
+                  options.forEach(option => {
+                      option.addEventListener('click', () => {
+                          stopTimer();
+                          if (option.dataset.correct === "true") {
+                              score++;
+                              scoreBoard.textContent = `النقاط: ${score}`;
+                              showFeedback("إجابة صحيحة! 🎉", true);
+                              setTimeout(nextQuestion, 1500);
+                          } else {
+                              showFeedback("إجابة خاطئة! 😢", false);
+                              setTimeout(restartGame, 1500);
+                          }
+                      });
+                  });
+              }
+
+              function showFeedback(message, isCorrect) {
+                  feedback.textContent = message;
+                  feedback.style.color = isCorrect ? "#39ff14" : "#ff4141";
+                  feedback.style.display = "block";
+                  setTimeout(() => {
+                      feedback.style.display = "none";
+                  }, 1500);
+              }
+
+              function nextQuestion() {
+                  currentQuestionIndex++;
+                  if (currentQuestionIndex < questions.length) {
+                      loadQuestion();
+                  } else {
+                      alert(`تهانينا! لقد أكملت اللعبة بنجاح. نقاطك: ${score}`);
+                      startGame();
+                  }
+              }
+
+              function restartGame() {
+                  alert("انتهى الوقت! اللعبة ستبدأ من جديد.");
+                  startGame();
+              }
+
+              function startTimer() {
+                  timer = 10;
+                  updateTimer();
+                  interval = setInterval(() => {
+                      timer--;
+                      updateTimer();
+                      if (timer === 0) {
+                          stopTimer();
+                          restartGame();
+                      }
+                  }, 1000);
+              }
+
+              function stopTimer() {
+                  clearInterval(interval);
+              }
+
+              function updateTimer() {
+                  timerElement.textContent = timer;
+              }
+
+              startGame();
+    </script>
+  </body>
+</html>
